@@ -79,9 +79,7 @@
     int CLL2_MIN = 512; // de EEPROM Valor del ADC tomado en el sensor2 de la llave cuando esa se encuentra en su tope derecho.
     char STOP = 0; // Bandera de parada del motor.
     
-
-
-
+    
 void InicializacionControlador(void)
 {
     PWM3DCH = (24 & 0x03FC)>>2; //inicializando controlador
