@@ -40,7 +40,6 @@
     OF FEES, IF ANY, THAT YOU HAVE PAID DIRECTLY TO MICROCHIP FOR THIS 
     SOFTWARE.
 */
-
 #include "mcc_generated_files/mcc.h"
 #include "math.h"
 #include "Variables.h"
@@ -80,16 +79,27 @@
     int CLL2_MIN = 512; // de EEPROM Valor del ADC tomado en el sensor2 de la llave cuando esa se encuentra en su tope derecho.
     char STOP = 0; // Bandera de parada del motor.
     char DIRECC = 0; // Indica el estado de la dirección de giro del motor en el momento anterior al cambio.
+    uint16_t ADRESS = 0x01C0;
+    uint16_t BUFFER = 0;
+    uint16_t WORD = 0;
+    uint16_t *ADRESSP;
     
+   
+    void Autocalibracon(void)
+    {
+        while (!GAT_1_2_PORT)
+        {
+            LL1_GIR_ADC = ADC_GetConversion(LL1_GIR);
+            LL2_GIR_ADC = ADC_GetConversion(LL2_GIR);
+            
+        }
+        
+        
+            // leer en EEPOM cada uno de las 8 variables en variables auxiliares y si estan en FF reemplazarlas por los valores que contienen originales.
+            // si los valores de EEPROM son distintos de FF colocar el valor leido en cada una de las variables
+        
+    }
     
-//void InicializacionControlador(void)
-//{
-//    PWM3DCH = (24 & 0x03FC)>>2; //inicializando controlador
-//    PWM3DCL = (24 & 0x0003)<<6;
-//   __delay_ms(3000); // Fin de inicialización controlador   
-//}
-
-
     void InicializacionControlador(void)
 {
     PWM3DCH = (24 & 0x03FC)>>2; //inicializando controlador
@@ -261,12 +271,12 @@ void main(void)
     //INICIALIZACIÓN DE VARIABLES LOCALES
         
     int PWM_VEL = 24;
-    
-    
-    
+        
     // INICIO DE PROGRAM
     InicializacionControlador();
     CalculosIniciales();
+    //FLASH_WriteWord(ADRESS, ADRESSP, WORD);
+    WORD = FLASH_ReadWord(ADRESS);
     TMAX = TG_x10ms;
     while (1)
     {
