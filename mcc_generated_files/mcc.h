@@ -52,9 +52,12 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <conio.h>
-#include "tmr2.h"
+#include "interrupt_manager.h"
 #include "pwm3.h"
+#include "memory.h"
+#include "tmr2.h"
 #include "adc.h"
+#include "tmr0.h"
 
 
 

@@ -43,7 +43,7 @@
 
 #include "mcc_generated_files/mcc.h"
 #include "math.h"
-
+#include "Variables.h"
 /*
                         ***** CONSTANTES GLOBALES *****
  */
@@ -52,7 +52,8 @@
     #define P_LL 30.0 // % Porcentaje de las llaves a partir del cual se produce la detención del motor (o cambio de sentido de giro).
     #define PVLIM 20.0 // % Porcentaje de velocidad Limite final.
     #define DELTA_MAX_PWM 25.0 // Diferencia entre PWM a velocidad máxima y velocidad mínima
-    #define PWM_MIN 31 // Valor mínimo estable al que puede girar el motor
+    #define PWM_MIN 31 // Valor mínimo estable al que puede girar el motor.
+    #define TG_x10ms 100 // Tiempo x10 milisegundos usado para espera de inversión de giro.
 /*
                         ***** VARIABLES GLOBALES *****
  */
@@ -78,36 +79,84 @@
     int CLL2_MAX = 0; // de EEPROM Valor del ADC tomado en el sensor2 de la llave cuando esa se encuentra en su tope izquierdo.
     int CLL2_MIN = 512; // de EEPROM Valor del ADC tomado en el sensor2 de la llave cuando esa se encuentra en su tope derecho.
     char STOP = 0; // Bandera de parada del motor.
+    char DIRECC = 0; // Indica el estado de la dirección de giro del motor en el momento anterior al cambio.
     
     
-void InicializacionControlador(void)
+//void InicializacionControlador(void)
+//{
+//    PWM3DCH = (24 & 0x03FC)>>2; //inicializando controlador
+//    PWM3DCL = (24 & 0x0003)<<6;
+//   __delay_ms(3000); // Fin de inicialización controlador   
+//}
+
+
+    void InicializacionControlador(void)
 {
     PWM3DCH = (24 & 0x03FC)>>2; //inicializando controlador
     PWM3DCL = (24 & 0x0003)<<6;
-    __delay_ms(3000); // Fin de inicialización controlador   
+    __delay_ms(500); // Fin de inicialización controlador   
 }
-
-void InvGiro(void)
+    
+    void InvGiro(void)
 {    
     LL1_GIR_ADC = ADC_GetConversion(LL1_GIR);
     LL2_GIR_ADC = ADC_GetConversion(LL2_GIR);
     
     if (LL1_GIR_ADC>CLL1_L &&  LL2_GIR_ADC<CLL2_H) //Ambos sensores indican que la llave esta hacia la derecha?
     {
-        STOP = 0;
+   //     STOP = 0;
         if (JGAT_1_2_PORT == 1)
         {
-            DIREC_LAT = 1;
+            if (DIRECC == 0)
+            {   
+                if (STOP == 1)
+                {
+                    if (TEMP_IG >= TMAX)
+                    {
+                        DIREC_LAT = 1;
+                        DIRECC = 1;
+                        STOP = 0;
+                    }
+                }
+                else
+                {
+                    STOP = 1;
+                }
+            }
+            else
+            {
+                STOP = 0;
+            }
+            
         }
     }
     else
-    {   
+    {
         if (LL1_GIR_ADC<CLL1_H && LL2_GIR_ADC>CLL2_L) //Ambos sensores indican que la llave esta hacia la izquierda?
         {
-            STOP = 0;
+//            STOP = 0;
             if (JGAT_1_2_PORT == 1)
-            {
-                DIREC_LAT = 0;
+            {            
+                if (DIRECC == 1)
+                {   
+                    if (STOP == 1)
+                    {
+                        if (TEMP_IG >= TMAX)
+                        {
+                            DIREC_LAT = 0;
+                            DIRECC = 0;
+                            STOP = 0;
+                        }
+                    }
+                    else
+                    {
+                        STOP = 1;
+                    }
+                }
+                else
+                {
+                    STOP = 0;
+                }
             }
         }
         else
@@ -119,11 +168,49 @@ void InvGiro(void)
             GAT_GIR_ADC = ADC_GetConversion(GAT_GIR);
                 if   (GAT_GIR_ADC < C_GG) // la presión del gatillo de inversión de giro alcanzo el % de comparación?
                 {
-                    DIREC_LAT = 1;
+                    if (DIRECC == 0)
+                    {   
+                        if (STOP == 1)
+                        {
+                            if (TEMP_IG >= TMAX)
+                            {
+                                DIREC_LAT = 1;
+                                DIRECC = 1;
+                                STOP = 0;
+                            }
+                        }
+                        else
+                        {
+                            STOP = 1;
+                        }
+                    }
+                    else
+                    {
+                        STOP = 0;
+                    }
                 }
                 else
                 {
-                    DIREC_LAT = 0;
+                    if (DIRECC == 1)
+                    {   
+                        if (STOP == 1)
+                        {
+                            if (TEMP_IG >= TMAX)
+                            {
+                                DIREC_LAT = 0;
+                                DIRECC = 0;
+                                STOP = 0;
+                            }
+                        }
+                        else
+                        {
+                            STOP = 1;
+                        }
+                    }
+                    else
+                    {
+                        STOP = 0;
+                    }
                 }
         }
         else
@@ -172,10 +259,10 @@ void main(void)
     // Use the following macros to:
 
     // Enable the Global Interrupts
-    //INTERRUPT_GlobalInterruptEnable();
+    INTERRUPT_GlobalInterruptEnable();
 
     // Enable the Peripheral Interrupts
-    //INTERRUPT_PeripheralInterruptEnable();
+    INTERRUPT_PeripheralInterruptEnable();
 
     // Disable the Global Interrupts
     //INTERRUPT_GlobalInterruptDisable();
@@ -189,16 +276,30 @@ void main(void)
     
     
     
-    // INICIO DE PROGRAMA
+    // INICIO DE PROGRAM
     InicializacionControlador();
     CalculosIniciales();
+    TMAX = TG_x10ms;
     while (1)
     {
+       /*if (TEMP_IG >= TMAX)
+        {
+           TP1_LAT = 1;
+        }
+        else
+        {
+           TP1_LAT = 0; 
+        }
+        if (TP3_PORT == 0)
+        {
+            TEMP_IG = 0;
+        }*/
        InvGiro();
        G_VEL_ADC = ADC_GetConversion(G_VEL);
        if (G_VEL_ADC<=GINIC && STOP==0)  // el gatillo está presionado más del "PG_INIC%" y la bandera "STOP" está dsactivada?
             {
-           PWM_VEL = (int) (roundf(B_aux-M_aux*G_VEL_ADC)); // se realiza el cálculo final para la velocidad
+            TEMP_IG = 0;
+            PWM_VEL = (int) (roundf(B_aux-M_aux*G_VEL_ADC)); // se realiza el cálculo final para la velocidad
             }
        else
             {
