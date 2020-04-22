@@ -270,20 +270,9 @@ void main(void)
     TMAX = TG_x10ms;
     while (1)
     {
-       /*if (TEMP_IG >= TMAX)
-        {
-           TP1_LAT = 1;
-        }
-        else
-        {
-           TP1_LAT = 0; 
-        }
-        if (TP3_PORT == 0)
-        {
-            TEMP_IG = 0;
-        }*/
        InvGiro();
        G_VEL_ADC = ADC_GetConversion(G_VEL);
+       
        if (G_VEL_ADC<=GINIC && STOP==0)  // el gatillo está presionado más del "PG_INIC%" y la bandera "STOP" está dsactivada?
             {
             TEMP_IG = 0;
