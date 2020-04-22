@@ -53,7 +53,7 @@
     #define PVLIM 20.0 // % Porcentaje de velocidad Limite final.
     #define DELTA_MAX_PWM 25.0 // Diferencia entre PWM a velocidad máxima y velocidad mínima
     #define PWM_MIN 31 // Valor mínimo estable al que puede girar el motor.
-    #define TG_x10ms 100 // Tiempo x10 milisegundos usado para espera de inversión de giro.
+    #define TG_x10ms 150 // Tiempo x10 milisegundos usado para espera de inversión de giro.
 /*
                         ***** VARIABLES GLOBALES *****
  */
@@ -94,7 +94,7 @@
 {
     PWM3DCH = (24 & 0x03FC)>>2; //inicializando controlador
     PWM3DCL = (24 & 0x0003)<<6;
-    __delay_ms(500); // Fin de inicialización controlador   
+    __delay_ms(3000); // Fin de inicialización controlador   
 }
     
     void InvGiro(void)
@@ -102,41 +102,35 @@
     LL1_GIR_ADC = ADC_GetConversion(LL1_GIR);
     LL2_GIR_ADC = ADC_GetConversion(LL2_GIR);
     
-    if (LL1_GIR_ADC>CLL1_L &&  LL2_GIR_ADC<CLL2_H) //Ambos sensores indican que la llave esta hacia la derecha?
+    if (LL1_GIR_ADC<CLL1_H && LL2_GIR_ADC>CLL2_L || LL1_GIR_ADC>CLL1_L &&  LL2_GIR_ADC<CLL2_H)
     {
-   //     STOP = 0;
         if (JGAT_1_2_PORT == 1)
         {
-            if (DIRECC == 0)
-            {   
-                if (STOP == 1)
-                {
-                    if (TEMP_IG >= TMAX)
+            if (LL1_GIR_ADC>CLL1_L &&  LL2_GIR_ADC<CLL2_H) //Ambos sensores indican que la llave esta hacia la derecha?
+            {
+                if (DIRECC == 0)
+                {   
+                    if (STOP == 1)
                     {
-                        DIREC_LAT = 1;
-                        DIRECC = 1;
-                        STOP = 0;
+                        if (TEMP_IG >= TMAX)
+                        {
+                            DIREC_LAT = 1;
+                            DIRECC = 1;
+                            STOP = 0;
+                        }
+                    }
+                    else
+                    {
+                        STOP = 1;
                     }
                 }
                 else
                 {
-                    STOP = 1;
+                    STOP = 0;
                 }
             }
-            else
-            {
-                STOP = 0;
-            }
-            
-        }
-    }
-    else
-    {
-        if (LL1_GIR_ADC<CLL1_H && LL2_GIR_ADC>CLL2_L) //Ambos sensores indican que la llave esta hacia la izquierda?
-        {
-//            STOP = 0;
-            if (JGAT_1_2_PORT == 1)
-            {            
+            if (LL1_GIR_ADC<CLL1_H && LL2_GIR_ADC>CLL2_L) //Ambos sensores indican que la llave esta hacia la izquierda?
+            {    
                 if (DIRECC == 1)
                 {   
                     if (STOP == 1)
@@ -161,64 +155,58 @@
         }
         else
         {
-            STOP = 1;
-        }
-        if (JGAT_1_2_PORT == 0)
-        {
             GAT_GIR_ADC = ADC_GetConversion(GAT_GIR);
-                if   (GAT_GIR_ADC < C_GG) // la presión del gatillo de inversión de giro alcanzo el % de comparación?
-                {
-                    if (DIRECC == 0)
-                    {   
-                        if (STOP == 1)
+            if   (GAT_GIR_ADC < C_GG) // la presión del gatillo de inversión de giro alcanzo el % de comparación?
+            {
+                if (DIRECC == 0)
+                {   
+                    if (STOP == 1)
+                    {
+                        if (TEMP_IG >= TMAX)
                         {
-                            if (TEMP_IG >= TMAX)
-                            {
-                                DIREC_LAT = 1;
-                                DIRECC = 1;
-                                STOP = 0;
-                            }
-                        }
-                        else
-                        {
-                            STOP = 1;
+                            DIREC_LAT = 1;
+                            DIRECC = 1;
+                            STOP = 0;
                         }
                     }
                     else
                     {
-                        STOP = 0;
+                        STOP = 1;
                     }
                 }
                 else
                 {
-                    if (DIRECC == 1)
-                    {   
-                        if (STOP == 1)
+                    STOP = 0;
+                }
+            }
+            else
+            {
+                if (DIRECC == 1)
+                {   
+                    if (STOP == 1)
+                    {
+                        if (TEMP_IG >= TMAX)
                         {
-                            if (TEMP_IG >= TMAX)
-                            {
-                                DIREC_LAT = 0;
-                                DIRECC = 0;
-                                STOP = 0;
-                            }
-                        }
-                        else
-                        {
-                            STOP = 1;
+                            DIREC_LAT = 0;
+                            DIRECC = 0;
+                            STOP = 0;
                         }
                     }
                     else
                     {
-                        STOP = 0;
+                        STOP = 1;
                     }
                 }
+                else
+                {
+                    STOP = 0;
+                }
+            }
         }
-        else
-        {
-
-
-        }   
-     
+    }
+    else
+    {
+        STOP = 1;
     }
 }   
     
