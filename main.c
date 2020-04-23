@@ -66,9 +66,9 @@
     int CLL1_H = 425; //Valor calculado para comparación del ADC a partir del cual el sensor1 de la llave pasa de el tope derecho al centro (para detención de giro).
     int CLL2_L = 470; //Valor calculado para comparación del ADC a partir del cual el sensor2 de la llave pasa de el tope derecho al centro (para detención de giro).
     int CLL2_H = 425; //Valor calculado para comparación del ADC a partir del cual el sensor2 de la llave pasa de el tope izquierdo al centro (para detención de giro).
-    float M_aux = 0; // Variables auxiliares para realzar la mayor parte del cálculo del PWM_VEL fuera del Wile.
-    float B_aux = 0; // Variables auxiliares para realzar la mayor parte del cálculo del PWM_VEL fuera del Wile.
-    float DELTA_PWM =0; // Variable auxiliar para el calculo de límite de velocidad
+ //   float M_aux = 0; // Variables auxiliares para realzar la mayor parte del cálculo del PWM_VEL fuera del Wile.
+ //   float B_aux = 0; // Variables auxiliares para realzar la mayor parte del cálculo del PWM_VEL fuera del Wile.
+    char DELTA_PWM =0; // Variable auxiliar para el calculo de límite de velocidad
     int GMAX = 0; //  de EEPROM Valor del ADC que alcanza el gatillo de velocidad presionado al máximo (menor valor ADC).
     int GMIN = 512; // de EEPROM Valor del ADC que alcanza el gatillo de velocidad presionado al mínimo (mayor valor ADC).
     int GG_MAX = 512; // de EEPROM Valor del ADC que alcanza el gatillo de Giro presionado al máximo (mínimo valor ADC).
@@ -90,6 +90,7 @@
         while (!GAT_1_2_PORT)
         {
             LL1_GIR_ADC = ADC_GetConversion(LL1_GIR);
+            
             LL2_GIR_ADC = ADC_GetConversion(LL2_GIR);
             
         }
@@ -225,16 +226,16 @@ void CalculosIniciales(void)
 {
    C_GG = (int) (roundf(GG_MIN-(GG_MIN - GG_MAX)*(float)P_GG/100)); // Calculo del porcentaje "P_GG%" leido del ADC de presión de gatillo a partir del cual se puede invertir el giro.
    GINIC = (int) (roundf(GMIN-(GMIN-GMAX)*((float)PG_INIC)/100)); // Calculo del porcentaje "PG_INIC%" leido del ADC de presión de gatillo a partir del cual comienza a funcionar.
-   if (V_MAX_PORT == 0)
+/*   if (V_MAX_PORT == 0)
    {
-       DELTA_PWM = (DELTA_MAX_PWM*(100-PVLIM)/100);
+       DELTA_PWM = (char) roundf(DELTA_MAX_PWM*(100-PVLIM)/100);
    }
    else
    {
       DELTA_PWM= DELTA_MAX_PWM;
-   }
-   M_aux = DELTA_PWM/(float) GINIC-GMAX; // cáclulos auxiliares para realzar la mayor parte del cálculo del PWM_VEL fuera del Wile.
-   B_aux = (((GINIC*DELTA_PWM)/(float)(GINIC-GMAX))+PWM_MIN); // cáclulos auxiliares para realzar la mayor parte del cálculo del PWM_VEL fuera del Wile.
+   }*/
+ //  M_aux = DELTA_PWM/(float) GINIC-GMAX; // cáclulos auxiliares para realzar la mayor parte del cálculo del PWM_VEL fuera del Wile.
+ //  B_aux = (((GINIC*DELTA_PWM)/(float)(GINIC-GMAX))+PWM_MIN); // cáclulos auxiliares para realzar la mayor parte del cálculo del PWM_VEL fuera del Wile.
    CLL1_L = (int) (roundf(CLL1_MIN - (CLL1_MIN-CLL1_MAX)*P_LL/100));
    CLL1_H = (int) (roundf(CLL1_MAX + (CLL1_MIN-CLL1_MAX)*P_LL/100));
    CLL2_L = (int) (roundf(CLL2_MIN - (CLL2_MIN-CLL2_MAX)*P_LL/100));
@@ -282,11 +283,19 @@ void main(void)
     {
        InvGiro();
        G_VEL_ADC = ADC_GetConversion(G_VEL);
-       
+         if (V_MAX_PORT == 0)
+    {
+       DELTA_PWM = (char) roundf(DELTA_MAX_PWM*(100-PVLIM)/100);
+    }
+    else
+    {
+       DELTA_PWM= DELTA_MAX_PWM;
+    }
        if (G_VEL_ADC<=GINIC && STOP==0)  // el gatillo está presionado más del "PG_INIC%" y la bandera "STOP" está dsactivada?
             {
             TEMP_IG = 0;
-            PWM_VEL = (int) (roundf(B_aux-M_aux*G_VEL_ADC)); // se realiza el cálculo final para la velocidad
+            PWM_VEL = (int) roundf(((GINIC-G_VEL_ADC)*DELTA_PWM/(GINIC-GMAX))+31);
+            //  PWM_VEL = (int) (roundf(B_aux-M_aux*G_VEL_ADC)); // se realiza el cálculo final para la velocidad
             }
        else
             {
