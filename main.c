@@ -94,38 +94,38 @@
             G_VEL_ADC = ADC_GetConversion(G_VEL);
             if (G_VEL_ADC<GMAX)
             {
-                GMAX = G_VEL_ADC;
+              //  GMAX = G_VEL_ADC;
             }
             if (G_VEL_ADC>GMIN)
             {
-                GMIN = G_VEL_ADC;
-            }/*
+               // GMIN = G_VEL_ADC;
+            }
             GAT_GIR_ADC = ADC_GetConversion(GAT_GIR);
             if (GAT_GIR_ADC<GG_MAX)
             {
-                GG_MAX = GAT_GIR_ADC;
+              //  GG_MAX = GAT_GIR_ADC;
             }
             if (GAT_GIR_ADC>GG_MIN)
             {
-                GG_MIN = GAT_GIR_ADC;
+              //  GG_MIN = GAT_GIR_ADC;
             }
             LL1_GIR_ADC = ADC_GetConversion(LL1_GIR);
             if (LL1_GIR_ADC<CLL1_MAX)
             {
-                CLL1_MAX = LL1_GIR_ADC;
+              //  CLL1_MAX = LL1_GIR_ADC;
             }
             if (LL1_GIR_ADC>CLL1_MIN)
             {
-                CLL1_MIN = LL1_GIR_ADC;
+              //  CLL1_MIN = LL1_GIR_ADC;
             }
             LL2_GIR_ADC = ADC_GetConversion(LL2_GIR);
             if (LL2_GIR_ADC<CLL2_MAX)
             {
-                CLL2_MAX = LL2_GIR_ADC;
-            }*/
+              //  CLL2_MAX = LL2_GIR_ADC;
+            }
             if (LL2_GIR_ADC>CLL2_MIN)
             {
-                CLL2_MIN = LL2_GIR_ADC;
+             //   CLL2_MIN = LL2_GIR_ADC;
             }
             
         }
@@ -143,11 +143,10 @@
                 FLASH_WriteBlock(ADRESS, BLOQUE_MEM);
                 
                 //TMAX = FLASH_ReadWord(ADRESS);
-            
-            
+                     
             }
         
-           
+         
         
         
         
