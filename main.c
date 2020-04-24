@@ -45,7 +45,7 @@
 #include "Variables.h"
 /*
                         ***** CONSTANTES GLOBALES *****
- */
+ */ #define T_INIC 500 // Tiempo en milisegundos de Inicializacion del Controlador.
     #define PG_INIC 10.0 // % Porcentaje del gatillo a partir del cual comienza a funcionar el motor
     #define P_GG 40.0 // % Porcentaje del gatillo a partir del cual se produce la inversión de giro
     #define P_LL 30.0 // % Porcentaje de las llaves a partir del cual se produce la detención del motor (o cambio de sentido de giro).
@@ -79,20 +79,30 @@
     int CLL2_MIN = 512; // de EEPROM Valor del ADC tomado en el sensor2 de la llave cuando esa se encuentra en su tope derecho.
     char STOP = 0; // Bandera de parada del motor.
     char DIRECC = 0; // Indica el estado de la dirección de giro del motor en el momento anterior al cambio.
-    uint16_t ADRESS = 0x01C0;
+    uint16_t ADRESS = 0x0F80;
     uint16_t BUFFER = 0;
     uint16_t WORD = 0;
-    uint16_t *ADRESSP;
+    uint16_t ADRESSP [32];
     
    
     void Autocalibracon(void)
     {
         while (!GAT_1_2_PORT)
         {
-            LL1_GIR_ADC = ADC_GetConversion(LL1_GIR);
-            
+            LL1_GIR_ADC = ADC_GetConversion(LL1_GIR);            
             LL2_GIR_ADC = ADC_GetConversion(LL2_GIR);
+            GAT_GIR_ADC = ADC_GetConversion(GAT_GIR);
+            G_VEL_ADC = ADC_GetConversion(G_VEL);
             
+            if (DIRECC.bit = 1)
+            {
+                
+            }
+            
+             /*   FLASH_WriteWord(ADRESS, ADRESSP, TG_x10ms);
+                 __delay_ms(100);
+                TMAX = FLASH_ReadWord(ADRESS);
+            */
         }
         
         
@@ -105,7 +115,7 @@
 {
     PWM3DCH = (24 & 0x03FC)>>2; //inicializando controlador
     PWM3DCL = (24 & 0x0003)<<6;
-    __delay_ms(3000); // Fin de inicialización controlador   
+    __delay_ms(T_INIC); // Fin de inicialización controlador   
 }
     
     void InvGiro(void)
@@ -276,8 +286,7 @@ void main(void)
     // INICIO DE PROGRAM
     InicializacionControlador();
     CalculosIniciales();
-    //FLASH_WriteWord(ADRESS, ADRESSP, WORD);
-    WORD = FLASH_ReadWord(ADRESS);
+
     TMAX = TG_x10ms;
     while (1)
     {
