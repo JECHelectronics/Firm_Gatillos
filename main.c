@@ -79,31 +79,43 @@
     int CLL2_MIN = 512; // de EEPROM Valor del ADC tomado en el sensor2 de la llave cuando esa se encuentra en su tope derecho.
     char STOP = 0; // Bandera de parada del motor.
     char DIRECC = 0; // Indica el estado de la dirección de giro del motor en el momento anterior al cambio.
+    char BAND_MEM = 0; // Bandera utilizada para saber si se debe grabar en la memo flash (ex eeprom).
     uint16_t ADRESS = 0x0F80;
     uint16_t BUFFER = 0;
     uint16_t WORD = 0;
-    uint16_t ADRESSP [32];
+    uint16_t BLOQUE_MEM [32];
     
    
     void Autocalibracon(void)
     {
         while (!GAT_1_2_PORT)
         {
+            BAND_MEM = 1;
             LL1_GIR_ADC = ADC_GetConversion(LL1_GIR);            
             LL2_GIR_ADC = ADC_GetConversion(LL2_GIR);
             GAT_GIR_ADC = ADC_GetConversion(GAT_GIR);
             G_VEL_ADC = ADC_GetConversion(G_VEL);
             
-            if (DIRECC.bit = 1)
+        }
+                        
+            if (BAND_MEM = 1)
             {
-                
-            }
-            
-             /*   FLASH_WriteWord(ADRESS, ADRESSP, TG_x10ms);
+                BLOQUE_MEM [1] = GMAX;
+                BLOQUE_MEM [2] = GMIN;
+                BLOQUE_MEM [3] = GG_MAX;
+                BLOQUE_MEM [4] = GG_MIN;
+                BLOQUE_MEM [5] = CLL1_MAX;
+                BLOQUE_MEM [6] = CLL1_MIN;
+                BLOQUE_MEM [7] = CLL2_MAX;
+                /*   FLASH_WriteWord(ADRESS, ADRESSP, TG_x10ms);
                  __delay_ms(100);
                 TMAX = FLASH_ReadWord(ADRESS);
-            */
-        }
+            
+                 */
+            }
+        
+           
+        
         
         
             // leer en EEPOM cada uno de las 8 variables en variables auxiliares y si estan en FF reemplazarlas por los valores que contienen originales.
