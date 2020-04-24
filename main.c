@@ -56,27 +56,27 @@
 /*
                         ***** VARIABLES GLOBALES *****
  */
-    int GAT_GIR_ADC = 512;
-    int LL1_GIR_ADC = 0;
-    int LL2_GIR_ADC = 512;
-    int G_VEL_ADC = 512;
-    int C_GG = 399; // Valor calculado para comparación del ADC a partir del cual el Gatillo de giro produce el cambio de sentido del motor.
-    int GINIC = 500; // Valor calculado para comparación del ADC a partir del cual el gatillo de velocidad comienza a actuar.
-    int CLL1_L = 470; //Valor calculado para comparación del ADC a partir del cual el sensor1 de la llave pasa de el tope izquierdo al centro (para detención de giro).
-    int CLL1_H = 425; //Valor calculado para comparación del ADC a partir del cual el sensor1 de la llave pasa de el tope derecho al centro (para detención de giro).
-    int CLL2_L = 470; //Valor calculado para comparación del ADC a partir del cual el sensor2 de la llave pasa de el tope derecho al centro (para detención de giro).
-    int CLL2_H = 425; //Valor calculado para comparación del ADC a partir del cual el sensor2 de la llave pasa de el tope izquierdo al centro (para detención de giro).
+    short GAT_GIR_ADC = 512;
+    short LL1_GIR_ADC = 0;
+    short LL2_GIR_ADC = 512;
+    short G_VEL_ADC = 512;
+    short C_GG = 399; // Valor calculado para comparación del ADC a partir del cual el Gatillo de giro produce el cambio de sentido del motor.
+    short GINIC = 500; // Valor calculado para comparación del ADC a partir del cual el gatillo de velocidad comienza a actuar.
+    short CLL1_L = 470; //Valor calculado para comparación del ADC a partir del cual el sensor1 de la llave pasa de el tope izquierdo al centro (para detención de giro).
+    short CLL1_H = 425; //Valor calculado para comparación del ADC a partir del cual el sensor1 de la llave pasa de el tope derecho al centro (para detención de giro).
+    short CLL2_L = 470; //Valor calculado para comparación del ADC a partir del cual el sensor2 de la llave pasa de el tope derecho al centro (para detención de giro).
+    short CLL2_H = 425; //Valor calculado para comparación del ADC a partir del cual el sensor2 de la llave pasa de el tope izquierdo al centro (para detención de giro).
  //   float M_aux = 0; // Variables auxiliares para realzar la mayor parte del cálculo del PWM_VEL fuera del Wile.
  //   float B_aux = 0; // Variables auxiliares para realzar la mayor parte del cálculo del PWM_VEL fuera del Wile.
     char DELTA_PWM =0; // Variable auxiliar para el calculo de límite de velocidad
-    int GMAX = 0; //  de EEPROM Valor del ADC que alcanza el gatillo de velocidad presionado al máximo (menor valor ADC).
-    int GMIN = 512; // de EEPROM Valor del ADC que alcanza el gatillo de velocidad presionado al mínimo (mayor valor ADC).
-    int GG_MAX = 512; // de EEPROM Valor del ADC que alcanza el gatillo de Giro presionado al máximo (mínimo valor ADC).
-    int GG_MIN = 0; // de EEPROM Valor del ADC que alcanza el gatillo de Giro presionado al mínimo (mayor valor ADC).
-    int CLL1_MAX = 0; // de EEPROM Valor del ADC tomado en el sensor1 de la llave cuando esa se encuentra en su tope derecho.
-    int CLL1_MIN = 512; // de EEPROM Valor del ADC tomado en el sensor1 de la llave cuando esa se encuentra en su tope izquierdo.
-    int CLL2_MAX = 0; // de EEPROM Valor del ADC tomado en el sensor2 de la llave cuando esa se encuentra en su tope izquierdo.
-    int CLL2_MIN = 512; // de EEPROM Valor del ADC tomado en el sensor2 de la llave cuando esa se encuentra en su tope derecho.
+    short GMAX = 0; //  de EEPROM Valor del ADC que alcanza el gatillo de velocidad presionado al máximo (menor valor ADC).
+    short GMIN = 512; // de EEPROM Valor del ADC que alcanza el gatillo de velocidad presionado al mínimo (mayor valor ADC).
+    short GG_MAX = 512; // de EEPROM Valor del ADC que alcanza el gatillo de Giro presionado al máximo (mínimo valor ADC).
+    short GG_MIN = 0; // de EEPROM Valor del ADC que alcanza el gatillo de Giro presionado al mínimo (mayor valor ADC).
+    short CLL1_MAX = 0; // de EEPROM Valor del ADC tomado en el sensor1 de la llave cuando esa se encuentra en su tope derecho.
+    short CLL1_MIN = 512; // de EEPROM Valor del ADC tomado en el sensor1 de la llave cuando esa se encuentra en su tope izquierdo.
+    short CLL2_MAX = 0; // de EEPROM Valor del ADC tomado en el sensor2 de la llave cuando esa se encuentra en su tope izquierdo.
+    short CLL2_MIN = 512; // de EEPROM Valor del ADC tomado en el sensor2 de la llave cuando esa se encuentra en su tope derecho.
     char STOP = 0; // Bandera de parada del motor.
     char DIRECC = 0; // Indica el estado de la dirección de giro del motor en el momento anterior al cambio.
     char BAND_MEM = 0; // Bandera utilizada para saber si se debe grabar en la memo flash (ex eeprom).
@@ -91,14 +91,46 @@
         while (!GAT_1_2_PORT)
         {
             BAND_MEM = 1;
-            LL1_GIR_ADC = ADC_GetConversion(LL1_GIR);            
-            LL2_GIR_ADC = ADC_GetConversion(LL2_GIR);
-            GAT_GIR_ADC = ADC_GetConversion(GAT_GIR);
             G_VEL_ADC = ADC_GetConversion(G_VEL);
+            if (G_VEL_ADC<GMAX)
+            {
+                GMAX = G_VEL_ADC;
+            }
+            if (G_VEL_ADC>GMIN)
+            {
+                GMIN = G_VEL_ADC;
+            }/*
+            GAT_GIR_ADC = ADC_GetConversion(GAT_GIR);
+            if (GAT_GIR_ADC<GG_MAX)
+            {
+                GG_MAX = GAT_GIR_ADC;
+            }
+            if (GAT_GIR_ADC>GG_MIN)
+            {
+                GG_MIN = GAT_GIR_ADC;
+            }
+            LL1_GIR_ADC = ADC_GetConversion(LL1_GIR);
+            if (LL1_GIR_ADC<CLL1_MAX)
+            {
+                CLL1_MAX = LL1_GIR_ADC;
+            }
+            if (LL1_GIR_ADC>CLL1_MIN)
+            {
+                CLL1_MIN = LL1_GIR_ADC;
+            }
+            LL2_GIR_ADC = ADC_GetConversion(LL2_GIR);
+            if (LL2_GIR_ADC<CLL2_MAX)
+            {
+                CLL2_MAX = LL2_GIR_ADC;
+            }*/
+            if (LL2_GIR_ADC>CLL2_MIN)
+            {
+                CLL2_MIN = LL2_GIR_ADC;
+            }
             
         }
                         
-            if (BAND_MEM = 1)
+            if (BAND_MEM == 1)
             {
                 BLOQUE_MEM [1] = GMAX;
                 BLOQUE_MEM [2] = GMIN;
@@ -107,11 +139,12 @@
                 BLOQUE_MEM [5] = CLL1_MAX;
                 BLOQUE_MEM [6] = CLL1_MIN;
                 BLOQUE_MEM [7] = CLL2_MAX;
-                /*   FLASH_WriteWord(ADRESS, ADRESSP, TG_x10ms);
-                 __delay_ms(100);
-                TMAX = FLASH_ReadWord(ADRESS);
+                //   FLASH_WriteWord(ADRESS, ADRESSP, TG_x10ms);
+                FLASH_WriteBlock(ADRESS, BLOQUE_MEM);
+                
+                //TMAX = FLASH_ReadWord(ADRESS);
             
-                 */
+            
             }
         
            
@@ -135,7 +168,7 @@
     LL1_GIR_ADC = ADC_GetConversion(LL1_GIR);
     LL2_GIR_ADC = ADC_GetConversion(LL2_GIR);
     
-    if (LL1_GIR_ADC<CLL1_H && LL2_GIR_ADC>CLL2_L || LL1_GIR_ADC>CLL1_L &&  LL2_GIR_ADC<CLL2_H)
+    if ((LL1_GIR_ADC<CLL1_H && LL2_GIR_ADC>CLL2_L) || (LL1_GIR_ADC>CLL1_L &&  LL2_GIR_ADC<CLL2_H))
     {
         if (JGAT_1_2_PORT == 1)
         {
